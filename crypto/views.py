@@ -1,12 +1,12 @@
-import requests
-from django.shortcuts import render
+''' Views of the application are here'''
+
+from rest_framework.permissions import IsAuthenticated
 from django.core.cache import cache
 from django.conf import settings
+from rest_framework import status
 from rest_framework.response import Response
 from crypto.paginator import CustomPagination
 from crypto.viewset import CustomListAPIView
-from rest_framework.permissions import IsAuthenticated
-from rest_framework import status
 
 # Create your views here.
 
@@ -14,13 +14,14 @@ from rest_framework import status
 
 
 class CoinListView(CustomListAPIView):
+    '''View for listing list for the coins'''
 
     permission_class = [IsAuthenticated]
     pagination_class = CustomPagination
 
     def get(self, request):
+        '''Get call for the view'''
         try:
-                
             page_size = request.GET.get('page_size',10)
             page_num = request.GET.get('page_number',1)
 
@@ -37,7 +38,6 @@ class CoinListView(CustomListAPIView):
                 paginator.page_number = int(page_num)
                 page = paginator.paginate_queryset(coins_data,request)
                 return paginator.get_paginated_response(page)
-            
             return Response({'error' : "Could not fetch any data from the provider."})
 
         except Exception as e:
@@ -49,12 +49,12 @@ class CoinListView(CustomListAPIView):
 
 
 class CoinCategoryView(CustomListAPIView):
+    ''' Class for the listing the categories of coins'''
     permisssion_class = [IsAuthenticated]
     pagination_class = CustomPagination
-    
     def get(self, request):
+        '''get call for the view'''
         try:
-                
             page_size = request.GET.get('page_size',10)
             page_num = request.GET.get('page_number',1)
             cache_key = 'coin_category'
@@ -64,15 +64,12 @@ class CoinCategoryView(CustomListAPIView):
             if category_data is None:
                 category_data = self.get_data_from_gecko(endpoint='coins/categories/list')
                 cache.set(cache_key,category_data,timeout=300)
-            
-        
             if category_data:
                 paginator = self.pagination_class()
                 paginator.page_size = int(page_size)
                 paginator.page_number = int(page_num)
                 page = paginator.paginate_queryset(category_data,request)
                 return paginator.get_paginated_response(page)
-            
             return Response({'error':"Could not fetch any data from the provider."})
 
         except Exception as e:
@@ -83,10 +80,10 @@ class CoinCategoryView(CustomListAPIView):
 
 
 class CoinDataView(CustomListAPIView):
+    '''Class for view of market data of coins'''
     permission_class = [IsAuthenticated]
-    
     def get(self,request):
-
+        '''Get call for the view'''
         ids = request.GET.get('ids')
         category = request.GET.get('category')
         per_page = request.GET.get('per_page',10)
@@ -106,11 +103,4 @@ class CoinDataView(CustomListAPIView):
 
         if data:
             return Response(data)
-        
         return Response({'error':"Could not fetch any data from the provider."})
-
-
-
-    
-
-        

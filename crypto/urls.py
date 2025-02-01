@@ -1,3 +1,5 @@
+'''urls for the module'''
+
 from django.urls import path
 from crypto.views import CoinListView,CoinCategoryView,CoinDataView
 
